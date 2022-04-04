@@ -1,0 +1,21 @@
+Valim:
+    - Rodar o emulator do Erlang com flag +S -> ok
+    - Explorar o emulator -> ok
+    - Descubrir o que acontece quando da um lookup num map do Erlang -> todo
+    - Instrumentar -> ?
+    - Trace do Linux -> ?
+    - Postar no forum do Elixir/Erlang -> todo
+    - Verificar o que acontece no mapa -> todo
+    - Fazer a otimização somente quando é um literal no mapa (a priori nao é importante isso)
+    - Instrução get_map_elements do Erlang -> vasculhando
+    - rts printf -> é isso mesmo?
+
+Fernando:
+    - Entender o que é um mapa polimorfico e monomorfico
+    - Olhar no interpretador
+
+Arquivos
+    - beam_debug.c, 866
+    - beam_jit_common.cpp, 621
+    - arm/instr_map.cpp, 383, 465
+    - x86/instr_map.cpp, 372, 452

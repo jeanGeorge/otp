@@ -1,0 +1,4 @@
+erts/emulator/beam/beam_common.c -> nope
+erts/emulator/beam/beam_debug.c -> nope
+erts/emulator/beam/jit/beam_jit_common.cpp, beam_jit_get_map_elements -> talvez? sendo chamado sempre que digita algo no terminal.
+
