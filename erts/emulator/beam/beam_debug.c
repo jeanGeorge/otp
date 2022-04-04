@@ -862,29 +862,35 @@ print_op(fmtfn_t to, void *to_arg, int op, int size, BeamInstr* addr)
         }
         break;
     case op_i_get_map_elements_fsI:
-	{
-	    int n = unpacked[-1];
+    {
+        // printf("jean - 3 | ");
+        int n = unpacked[-1];
 
-	    while (n > 0) {
-		if (n % 3 == 1) {
-		    erts_print(to, to_arg, " %X", ap[0]);
-		} else {
-		    switch (loader_tag(ap[0])) {
-		    case LOADER_X_REG:
-			erts_print(to, to_arg, " x(%d)", loader_x_reg_index(ap[0]));
-			break;
-		    case LOADER_Y_REG:
-			erts_print(to, to_arg, " y(%d)", loader_y_reg_index(ap[0]) - CP_SIZE);
-			break;
-		    default:
-			erts_print(to, to_arg, " `%T`", (Eterm) ap[0]);
-			break;
-		    }
-		}
-		ap++, size++, n--;
-	    }
-	}
-	break;
+        while (n > 0)
+        {
+            if (n % 3 == 1)
+            {
+                erts_print(to, to_arg, " %X", ap[0]);
+            }
+            else
+            {
+                switch (loader_tag(ap[0]))
+                {
+                case LOADER_X_REG:
+                    erts_print(to, to_arg, " x(%d)", loader_x_reg_index(ap[0]));
+                    break;
+                case LOADER_Y_REG:
+                    erts_print(to, to_arg, " y(%d)", loader_y_reg_index(ap[0]) - CP_SIZE);
+                    break;
+                default:
+                    erts_print(to, to_arg, " `%T`", (Eterm)ap[0]);
+                    break;
+                }
+            }
+            ap++, size++, n--;
+        }
+    }
+    break;
     case op_i_make_fun3_Fdtt:
 	{
 	    int n = unpacked[-1];

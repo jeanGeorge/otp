@@ -296,7 +296,7 @@ void BeamModuleAssembler::emit_i_new_small_map_lit(const ArgRegister &Dst,
  * Result is returned in RET. ZF is set on success. */
 void BeamGlobalAssembler::emit_i_get_map_element_shared() {
     Label generic = a.newLabel(), hashmap = a.newLabel();
-
+    // printf("jean - 5 | ");
     a.and_(TMP1, ARG2, imm(_TAG_PRIMARY_MASK));
     a.cmp(TMP1, imm(TAG_PRIMARY_IMMED1));
     a.b_ne(generic);
@@ -354,7 +354,7 @@ void BeamModuleAssembler::emit_i_get_map_element(const ArgLabel &Fail,
                                                  const ArgRegister &Dst) {
     mov_arg(ARG1, Src);
     mov_arg(ARG2, Key);
-
+    // printf("jean - 6 | ");
     if (masked_types(Key, BEAM_TYPE_MASK_IMMEDIATE) != BEAM_TYPE_NONE) {
         fragment_call(ga->get_i_get_map_element_shared());
         a.b_ne(resolve_beam_label(Fail, disp1MB));
@@ -380,7 +380,7 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
                                                   const ArgWord &Size,
                                                   const Span<ArgVal> &args) {
     Label generic = a.newLabel(), next = a.newLabel();
-
+    // printf("jean - 7 | ");
     /* We're not likely to gain much from inlining huge extractions, and the
      * resulting code is quite large, so we'll cut it off after a handful
      * elements.
@@ -477,7 +477,7 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
  * Result is returned in RET. ZF is set on success. */
 void BeamGlobalAssembler::emit_i_get_map_element_hash_shared() {
     Label hashmap = a.newLabel();
-
+    // printf("jean - 8 | ");
     emit_untag_ptr(ARG1, ARG1);
 
     /* hashmap_get_element expects node header in ARG4, flatmap_get_element
@@ -501,8 +501,8 @@ void BeamModuleAssembler::emit_i_get_map_element_hash(const ArgLabel &Fail,
                                                       const ArgRegister &Dst) {
     mov_arg(ARG1, Src);
     mov_arg(ARG2, Key);
-    mov_arg(ARG3, Hx);
-
+    // mov_arg(ARG3, Hx);
+    // printf("jean - 9 | ");
     if (Key.isImmed()) {
         fragment_call(ga->get_i_get_map_element_hash_shared());
         a.b_ne(resolve_beam_label(Fail, disp1MB));

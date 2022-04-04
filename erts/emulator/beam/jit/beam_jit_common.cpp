@@ -617,7 +617,7 @@ Uint beam_jit_get_map_elements(Eterm map,
                                Uint n,
                                Eterm *fs) {
     Uint sz;
-
+    printf("jean - 4 | ");
     /* This instruction assumes Arg1 is a map, i.e. that it follows a test
      * is_map if needed. */
 

@@ -290,7 +290,7 @@ void BeamModuleAssembler::emit_i_new_small_map_lit(const ArgRegister &Dst,
  * Result is returned in RET. ZF is set on success. */
 void BeamGlobalAssembler::emit_i_get_map_element_shared() {
     Label generic = a.newLabel(), hashmap = a.newLabel();
-
+    // printf("jean - 10 | ");
     a.mov(RETd, ARG2d);
 
     a.and_(RETb, imm(_TAG_PRIMARY_MASK));
@@ -344,19 +344,19 @@ void BeamModuleAssembler::emit_i_get_map_element(const ArgLabel &Fail,
                                                  const ArgRegister &Dst) {
     mov_arg(ARG1, Src);
     mov_arg(ARG2, Key);
-
-    if (masked_types(Key, BEAM_TYPE_MASK_IMMEDIATE) != BEAM_TYPE_NONE &&
-        hasCpuFeature(CpuFeatures::X86::kBMI2)) {
-        safe_fragment_call(ga->get_i_get_map_element_shared());
-        a.jne(resolve_beam_label(Fail));
-    } else {
+    // printf("jean - 11 | ");
+    // if (masked_types(Key, BEAM_TYPE_MASK_IMMEDIATE) != BEAM_TYPE_NONE &&
+    //     hasCpuFeature(CpuFeatures::X86::kBMI2)) {
+    //     safe_fragment_call(ga->get_i_get_map_element_shared());
+    //     a.jne(resolve_beam_label(Fail));
+    // } else {
         emit_enter_runtime();
         runtime_call<2>(get_map_element);
         emit_leave_runtime();
 
         emit_test_the_non_value(RET);
         a.je(resolve_beam_label(Fail));
-    }
+    // }
 
     /* Don't store the result if the destination is the scratch X register.
      * (This instruction was originally a has_map_fields instruction.) */
@@ -371,7 +371,7 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
                                                   const Span<ArgVal> &args) {
     Label generic = a.newLabel(), next = a.newLabel();
     Label data = embed_vararg_rodata(args, 0);
-
+    // printf("jean - 12 | ");
     /* We're not likely to gain much from inlining huge extractions, and the
      * resulting code is quite large, so we'll cut it off after a handful
      * elements.
@@ -464,7 +464,7 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
  * Result is returned in RET. ZF is set on success. */
 void BeamGlobalAssembler::emit_i_get_map_element_hash_shared() {
     Label hashmap = a.newLabel();
-
+    // printf("jean - 13 | "); // nao é chamado
     emit_ptr_val(ARG1, ARG1);
 
     a.mov(RETd, emit_boxed_val(ARG1, 0, sizeof(Uint32)));
@@ -480,6 +480,11 @@ void BeamGlobalAssembler::emit_i_get_map_element_hash_shared() {
     emit_hashmap_get_element();
 }
 
+void test() {
+    printf("imediato\n");
+    // return 1;
+}
+
 void BeamModuleAssembler::emit_i_get_map_element_hash(const ArgLabel &Fail,
                                                       const ArgRegister &Src,
                                                       const ArgConstant &Key,
@@ -488,8 +493,16 @@ void BeamModuleAssembler::emit_i_get_map_element_hash(const ArgLabel &Fail,
     mov_arg(ARG1, Src);
     mov_arg(ARG2, Key);
     mov_arg(ARG3, Hx);
-
+    // printf("jean - 14 | ");
+    // Verifica se é imediato e ?
     if (Key.isImmed() && hasCpuFeature(CpuFeatures::X86::kBMI2)) {
+        // nao entendi
+        emit_enter_runtime();
+        runtime_call<0>(test);
+        emit_leave_runtime();
+        mov_arg(ARG1, Src);
+        mov_arg(ARG2, Key);
+        mov_arg(ARG3, Hx);
         safe_fragment_call(ga->get_i_get_map_element_hash_shared());
         a.jne(resolve_beam_label(Fail));
     } else {

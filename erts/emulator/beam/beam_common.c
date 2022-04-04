@@ -1876,73 +1876,103 @@ is_function2(Eterm Term, Uint arity)
     return 0;
 }
 
+// Chamado por BeamModuleAssembler::emit_i_get_map_element
+// Chamado por BeamGlobalAssembler::emit_i_get_map_element_shared() {
+// Retorna um elemento do mapa
 Eterm get_map_element(Eterm map, Eterm key)
 {
+    // printf("jean - 1 | "); //
     Uint32 hx;
     const Eterm *vs;
-    if (is_flatmap(map)) {
-	flatmap_t *mp;
-	Eterm *ks;
-	Uint i;
-	Uint n;
+    // Verifica se é um flatmap?
+    if (is_flatmap(map))
+    {
+        flatmap_t *mp;
+        Eterm *ks; // array de eterm?
+        Uint i;
+        Uint n;
 
-	mp = (flatmap_t *)flatmap_val(map);
-	ks = flatmap_get_keys(mp);
-	vs = flatmap_get_values(mp);
-	n  = flatmap_get_size(mp);
-	if (is_immed(key)) {
-	    for (i = 0; i < n; i++) {
-		if (ks[i] == key) {
-		    return vs[i];
-		}
-	    }
-	} else {
-	    for (i = 0; i < n; i++) {
-		if (EQ(ks[i], key)) {
-		    return vs[i];
-		}
-	    }
-	}
-	return THE_NON_VALUE;
+        mp = (flatmap_t *)flatmap_val(map);
+        ks = flatmap_get_keys(mp); // chaves
+        vs = flatmap_get_values(mp); // valores
+        n = flatmap_get_size(mp); // tamanho
+        if (is_immed(key)) // se é imediato
+        {
+            for (i = 0; i < n; i++) // percorre todo o mapa
+            {
+                if (ks[i] == key) // verifica se o valor em cada posição é igual a chave
+                {
+                    return vs[i];
+                }
+            }
+        }
+        else // se não é imediato, mesmo processo acima mas usando EQ?
+        {
+            for (i = 0; i < n; i++) 
+            {
+                if (EQ(ks[i], key))
+                {
+                    return vs[i];
+                }
+            }
+        }
+        return THE_NON_VALUE;
     }
-    ASSERT(is_hashmap(map));
-    hx = hashmap_make_hash(key);
-    vs = erts_hashmap_get(hx,key,map);
-    return vs ? *vs : THE_NON_VALUE;
+    ASSERT(is_hashmap(map)); // Se não é um flatmap, é um hasmap
+    hx = hashmap_make_hash(key); // obtem o hash
+    vs = erts_hashmap_get(hx, key, map);  // Obtem o valor no hashmap
+    return vs ? *vs : THE_NON_VALUE; // Retorna o valor do hashmap ou null (?)
 }
 
+// Chamado por BeamModuleAssembler::emit_i_get_map_element_hash
+// Retorna um elemento do mapa
 Eterm get_map_element_hash(Eterm map, Eterm key, Uint32 hx)
 {
+    printf("\tjean - 2 | ");
     const Eterm *vs;
 
-    if (is_flatmap(map)) {
-	flatmap_t *mp;
-	Eterm *ks;
-	Uint i;
-	Uint n;
+    // verifica se é flatmap(?)
+    if (is_flatmap(map))
+    {
+        flatmap_t *mp;
+        Eterm *ks;
+        Uint i;
+        Uint n;
 
-	mp = (flatmap_t *)flatmap_val(map);
-	ks = flatmap_get_keys(mp);
-	vs = flatmap_get_values(mp);
-	n  = flatmap_get_size(mp);
-	if (is_immed(key)) {
-	    for (i = 0; i < n; i++) {
-		if (ks[i] == key) {
-		    return vs[i];
-		}
-	    }
-	} else {
-	    for (i = 0; i < n; i++) {
-		if (EQ(ks[i], key)) {
-		    return vs[i];
-		}
-	    }
-	}
-	return THE_NON_VALUE;
+        mp = (flatmap_t *)flatmap_val(map);
+        ks = flatmap_get_keys(mp);
+        vs = flatmap_get_values(mp);
+        n = flatmap_get_size(mp);
+        if (is_immed(key))
+        {
+            printf("if |");
+            for (i = 0; i < n; i++)
+            {
+                if (ks[i] == key)
+                {
+                    printf("value: %ld | \n", vs[i]);
+                    return vs[i];
+                }
+            }
+        }
+        else
+        {
+            printf("else | ");
+            for (i = 0; i < n; i++)
+            {
+                if (EQ(ks[i], key))
+                {
+                    return vs[i];
+                }
+            }
+        }
+        printf("non | ");
+        return THE_NON_VALUE;
     }
 
+    printf("out\n");
     ASSERT(is_hashmap(map));
-    ASSERT(hx == hashmap_make_hash(key));
+    ASSERT(hx == hashmap_make_hash(key)); // diferença pra função anterior: garantir que hx é o hash?
     vs = erts_hashmap_get(hx, key, map);
     return vs ? *vs : THE_NON_VALUE;
 }

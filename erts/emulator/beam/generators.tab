@@ -449,7 +449,7 @@ gen.get_map_element(Fail, Src, Size, Rest) {
     Key = Rest[0];
     key_term = beam_load_get_term(S, Key);
     if (is_value(key_term)) {
-        $BeamOpNameArity(op, i_get_map_element_hash, 5);
+        $BeamOpNameArity(op, i_get_map_element_hash, 5); // aqui
         op->a[3].type = TAG_u;
         op->a[3].val = (BeamInstr) hashmap_make_hash(key_term);
         op->a[4] = Rest[1];
