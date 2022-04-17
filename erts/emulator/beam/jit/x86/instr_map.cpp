@@ -32,6 +32,30 @@ static const Uint32 INTERNAL_HASH_SALT = 3432918353;
 static const Uint32 HCONST_22 = 0x98C475E6UL;
 static const Uint32 HCONST = 0x9E3779B9;
 
+void print_emit_i_get_map_element_hash(Eterm map, Eterm key, Uint32 hx) {
+    erts_printf("[DEBUG] [instr_map.cpp] [emit_i_get_map_element_hash]\n");
+    erts_printf("[DEBUG] map: %T\n", map);
+    erts_printf("[DEBUG] key: %T\n", key);
+    erts_printf("[DEBUG] hx: %ld\n", hx);
+    erts_printf("------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+}
+
+void print_emit_i_get_map_element_hash_shared(Eterm map, Eterm key, Uint32 hx) {
+    erts_printf("[DEBUG] [instr_map.cpp] [emit_i_get_map_element_hash_shared]\n");
+    erts_printf("[DEBUG] map: %T\n", map);
+    erts_printf("[DEBUG] key: %T\n", key);
+    erts_printf("[DEBUG] hx: %ld\n", hx);
+    erts_printf("------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+}
+
+void print_emit_i_get_map_element(Eterm map, Eterm key) {
+    erts_printf("[DEBUG] [instr_map.cpp] [emit_i_get_map_element]\n");
+    erts_printf("[DEBUG] print_emit_i_get_map_element\n");
+    erts_printf("[DEBUG] map: %T\n", map);
+    erts_printf("[DEBUG] key: %T\n", key);
+    erts_printf("------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+}
+
 /* ARG3 = incoming hash
  * ARG4 = lower 32
  * ARG5 = upper 32
@@ -347,6 +371,11 @@ void BeamModuleAssembler::emit_i_get_map_element(const ArgLabel &Fail,
 
     if (masked_types(Key, BEAM_TYPE_MASK_IMMEDIATE) != BEAM_TYPE_NONE &&
         hasCpuFeature(CpuFeatures::X86::kBMI2)) {
+        emit_enter_runtime();
+        runtime_call<2>(print_emit_i_get_map_element);
+        emit_leave_runtime();
+        mov_arg(ARG1, Src);
+        mov_arg(ARG2, Key);
         safe_fragment_call(ga->get_i_get_map_element_shared());
         a.jne(resolve_beam_label(Fail));
     } else {
@@ -463,6 +492,10 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
  *
  * Result is returned in RET. ZF is set on success. */
 void BeamGlobalAssembler::emit_i_get_map_element_hash_shared() {
+    // emit_enter_runtime();
+    // runtime_call<3>(print_emit_i_get_map_element_hash_shared);
+    // emit_leave_runtime();
+
     Label hashmap = a.newLabel();
 
     emit_ptr_val(ARG1, ARG1);
@@ -490,6 +523,12 @@ void BeamModuleAssembler::emit_i_get_map_element_hash(const ArgLabel &Fail,
     mov_arg(ARG3, Hx);
 
     if (Key.isImmed() && hasCpuFeature(CpuFeatures::X86::kBMI2)) {
+        emit_enter_runtime();
+        runtime_call<3>(print_emit_i_get_map_element_hash);
+        emit_leave_runtime();
+        mov_arg(ARG1, Src);
+        mov_arg(ARG2, Key);
+        mov_arg(ARG3, Hx);
         safe_fragment_call(ga->get_i_get_map_element_hash_shared());
         a.jne(resolve_beam_label(Fail));
     } else {
