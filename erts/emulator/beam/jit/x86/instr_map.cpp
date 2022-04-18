@@ -371,11 +371,11 @@ void BeamModuleAssembler::emit_i_get_map_element(const ArgLabel &Fail,
 
     if (masked_types(Key, BEAM_TYPE_MASK_IMMEDIATE) != BEAM_TYPE_NONE &&
         hasCpuFeature(CpuFeatures::X86::kBMI2)) {
-        emit_enter_runtime();
-        runtime_call<2>(print_emit_i_get_map_element);
-        emit_leave_runtime();
-        mov_arg(ARG1, Src);
-        mov_arg(ARG2, Key);
+        // emit_enter_runtime();
+        // runtime_call<2>(print_emit_i_get_map_element);
+        // emit_leave_runtime();
+        // mov_arg(ARG1, Src);
+        // mov_arg(ARG2, Key);
         safe_fragment_call(ga->get_i_get_map_element_shared());
         a.jne(resolve_beam_label(Fail));
     } else {
@@ -523,12 +523,12 @@ void BeamModuleAssembler::emit_i_get_map_element_hash(const ArgLabel &Fail,
     mov_arg(ARG3, Hx);
 
     if (Key.isImmed() && hasCpuFeature(CpuFeatures::X86::kBMI2)) {
-        emit_enter_runtime();
-        runtime_call<3>(print_emit_i_get_map_element_hash);
-        emit_leave_runtime();
-        mov_arg(ARG1, Src);
-        mov_arg(ARG2, Key);
-        mov_arg(ARG3, Hx);
+        // emit_enter_runtime();
+        // runtime_call<3>(print_emit_i_get_map_element_hash);
+        // emit_leave_runtime();
+        // mov_arg(ARG1, Src);
+        // mov_arg(ARG2, Key);
+        // mov_arg(ARG3, Hx);
         safe_fragment_call(ga->get_i_get_map_element_hash_shared());
         a.jne(resolve_beam_label(Fail));
     } else {

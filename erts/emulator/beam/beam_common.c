@@ -48,21 +48,6 @@ static void save_stacktrace(Process* c_p, ErtsCodePtr pc, Eterm* reg,
 
 static Eterm make_arglist(Process* c_p, Eterm* reg, int a);
 
-// void print_get_map_element(Eterm map, Eterm key) {
-//     erts_printf("[DEBUG] [beam_common.c] [get_map_element]\n");
-//     erts_printf("[DEBUG] map: %T\n", map);
-//     erts_printf("[DEBUG] key: %T\n", key);
-//     erts_printf("------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n");
-// }
-
-// void print_get_map_element_hash(Eterm map, Eterm key, Uint32 hx) {
-//     erts_printf("[DEBUG] [beam_common.c] [get_map_element_hash]\n");
-//     erts_printf("[DEBUG] map: %T\n", map);
-//     erts_printf("[DEBUG] key: %T\n", key);
-//     erts_printf("[DEBUG] hx: %d\n", hx);
-//     erts_printf("------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n");
-// }
-
 /*
  * erts_dirty_process_main() is what dirty schedulers execute. Since they handle
  * only NIF calls they do not need to be able to execute all BEAM
@@ -1893,7 +1878,6 @@ is_function2(Eterm Term, Uint arity)
 
 Eterm get_map_element(Eterm map, Eterm key)
 {
-    // print_get_map_element(map, key);
     Uint32 hx;
     const Eterm *vs;
     if (is_flatmap(map)) {
@@ -1929,7 +1913,6 @@ Eterm get_map_element(Eterm map, Eterm key)
 
 Eterm get_map_element_hash(Eterm map, Eterm key, Uint32 hx)
 {
-    // print_get_map_element_hash(map, key, hx);
     const Eterm *vs;
 
     if (is_flatmap(map)) {

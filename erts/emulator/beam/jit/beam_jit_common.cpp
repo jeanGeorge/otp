@@ -630,7 +630,7 @@ Uint beam_jit_get_map_elements(Eterm map,
                                Eterm *E,
                                Uint n,
                                Eterm *fs) {
-    print_beam_get_map_elements(map, reg, E, n, fs);
+    // print_beam_get_map_elements(map, reg, E, n, fs);
     Uint sz;
 
     /* This instruction assumes Arg1 is a map, i.e. that it follows a test
