@@ -7,8 +7,9 @@ static ERL_NIF_TERM hello(ErlNifEnv *env,
 {
     ErlNifBinary *output_binary;
     enif_alloc_binary(sizeof "Hello from C", output_binary);
-    strcpy(output_binary->data, "Hello from C");
-    return enif_make_binary(env, output_binary);
+    // strcpy(output_binary->data, "Hello from C");
+    // return enif_make_binary(env, output_binary);
+    return enif_make_atom(env, "ok");
 }
 
 static ErlNifFunc nif_funcs[] = {

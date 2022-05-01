@@ -13,8 +13,8 @@ defmodule ElixirNif do
 
     # The C code will be replace this function
     # Here we can see a default implementation, that will called only if the C implementation it's not available
-    def hello do
-        raise "NIF could not be loaded"
+    def my_custom_nif do
+        raise "Custom NIF could not be loaded"
     end
 
 end

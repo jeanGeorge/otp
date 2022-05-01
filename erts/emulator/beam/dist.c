@@ -6155,7 +6155,23 @@ BIF_RETTYPE net_kernel_dflag_unicode_io_1(BIF_ALIST_1)
     erts_de_runlock(de);
     BIF_RET(((f & DFLAG_UNICODE_IO) ? am_true : am_false));
 }
-    
+
+
+// Jean - Testing
+BIF_RETTYPE erts_internal_my_custom_nif_0(BIF_ALIST_0)
+{
+    erts_printf("Hello from C code!\n");
+    BIF_RET(am_true);
+}
+
+BIF_RETTYPE erts_internal_my_custom_nif_with_args_2(BIF_ALIST_2)
+{
+    erts_printf("Hello from C code!\n");
+    erts_printf("Arg1: %T\n", BIF_ARG_1);
+    erts_printf("Arg2: %T\n", BIF_ARG_2);
+    BIF_RET(am_true);
+}
+
 /*
  * The major part of the implementation of net_kernel:monitor_nodes/[1,2]
  * follows.

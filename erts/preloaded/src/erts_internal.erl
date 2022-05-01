@@ -116,6 +116,10 @@
 
 -export([no_aux_work_threads/0]).
 
+-export([my_custom_nif/0]).
+
+-export([my_custom_nif_with_args/2]).
+
 %%
 %% Await result of send to port
 %%
@@ -978,4 +982,14 @@ beamfile_module_md5(_Bin) ->
 -spec no_aux_work_threads() -> pos_integer().
 
 no_aux_work_threads() ->
+    erlang:nif_error(undefined).
+
+-spec my_custom_nif() -> pos_integer().
+
+my_custom_nif() ->
+    erlang:nif_error(undefined).
+
+-spec my_custom_nif_with_args(arg1, arg2) -> pos_integer().
+
+my_custom_nif_with_args(arg1, arg2) ->
     erlang:nif_error(undefined).

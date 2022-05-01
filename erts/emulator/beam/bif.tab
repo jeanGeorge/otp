@@ -200,6 +200,9 @@ bif erts_internal:spawn_request/4
 bif erts_internal:dist_spawn_request/4
 bif erts_internal:no_aux_work_threads/0
 
+bif erts_internal:my_custom_nif/0
+bif erts_internal:my_custom_nif_with_args/2
+
 bif erlang:spawn_request_abandon/1
 
 # Static native functions in erts_literal_area_collector
