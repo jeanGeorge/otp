@@ -2,7 +2,6 @@
 -export([run/1]).
 
 run(Map) ->
-    erlang:display(start),
     case Map of
         #{a := Val} -> {ok, "Atom", "Single", Val};
         #{a := Val1, b := Val2} -> {ok, "Atom", "Multiple", Val1, Val2};
@@ -15,5 +14,4 @@ run(Map) ->
         #{[a] := Val} -> {ok, "List", "Single", Val};
         #{[a, b] := Val} -> {ok, "List", "Multiple", Val};
         #{} -> error
-    end,
-    erlang:display(stop).
+    end.
