@@ -42,13 +42,15 @@ void print_beam_get_map_elements(Eterm map,
                                Eterm *E,
                                Uint n,
                                Eterm *fs) {
-    erts_printf("[DEBUG] [beam_jit_common.cpp] [beam_jit_get_map_elements]\n");
-    erts_printf("[DEBUG] map: %T\n", map);
-    erts_printf("[DEBUG] *reg: %T\n", *reg);
-    erts_printf("[DEBUG] *E: %T\n", *E);
-    erts_printf("[DEBUG] n: %ld\n", n);
-    erts_printf("[DEBUG] fs: %T\n", *fs);
-    erts_printf("------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+    // if (MAPS_DEBUG == 1) {
+        erts_printf("[DEBUG] [beam_jit_common.cpp] [beam_jit_get_map_elements]\n");
+        erts_printf("[DEBUG] map: %T\n", map);
+        erts_printf("[DEBUG] *reg: %T\n", *reg);
+        erts_printf("[DEBUG] *E: %T\n", *E);
+        erts_printf("[DEBUG] n: %ld\n", n);
+        erts_printf("[DEBUG] fs: %T\n", *fs);
+        erts_printf("------------------------------------------------------------------------------------------------------------------------------------------------------------\n\n");
+    // }
 }
 
 static std::string getAtom(Eterm atom) {
@@ -630,7 +632,7 @@ Uint beam_jit_get_map_elements(Eterm map,
                                Eterm *E,
                                Uint n,
                                Eterm *fs) {
-    // print_beam_get_map_elements(map, reg, E, n, fs);
+    print_beam_get_map_elements(map, reg, E, n, fs);
     Uint sz;
 
     /* This instruction assumes Arg1 is a map, i.e. that it follows a test

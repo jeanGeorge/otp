@@ -116,9 +116,9 @@
 
 -export([no_aux_work_threads/0]).
 
--export([my_custom_nif/0]).
+-export([maps_debug_on/0]).
 
--export([my_custom_nif_with_args/2]).
+-export([maps_debug_off/0]).
 
 %%
 %% Await result of send to port
@@ -984,12 +984,12 @@ beamfile_module_md5(_Bin) ->
 no_aux_work_threads() ->
     erlang:nif_error(undefined).
 
--spec my_custom_nif() -> pos_integer().
+-spec maps_debug_on() -> pos_integer().
 
-my_custom_nif() ->
+maps_debug_on() ->
     erlang:nif_error(undefined).
 
--spec my_custom_nif_with_args(arg1, arg2) -> pos_integer().
+-spec maps_debug_off() -> pos_integer().
 
-my_custom_nif_with_args(arg1, arg2) ->
+maps_debug_off() ->
     erlang:nif_error(undefined).

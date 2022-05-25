@@ -198,6 +198,8 @@ int erts_no_crash_dump = 0;	/* Use -d to suppress crash dump. */
 
 int erts_no_line_info = 0;	/* -L: Don't load line information */
 
+int erts_maps_debug = 0;
+
 #ifdef BEAMASM
 int erts_jit_asm_dump = 0;	/* -JDdump: Dump assembly code */
 #endif
