@@ -1004,3 +1004,13 @@ dynamic_node_name(false) ->
         false -> ok;
         _ -> _ = persistent_term:erase({?MODULE, dynamic_node_name}), ok
     end.
+
+-spec debug_on() -> pos_integer().
+
+debug_on() ->
+    erlang:nif_error(undefined).
+
+-spec debug_off() -> pos_integer().
+
+debug_off() ->
+    erlang:nif_error(undefined).

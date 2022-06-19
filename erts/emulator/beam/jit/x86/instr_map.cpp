@@ -91,6 +91,21 @@ void BeamGlobalAssembler::emit_internal_hash_helper() {
     a.ret();
 }
 
+int MAPS_DEBUG = 0;
+
+// Jean - Testing
+BIF_RETTYPE erts_internal_debug_on_0(BIF_ALIST_0) {
+    MAPS_DEBUG = 1;
+    erts_printf("Debug activated!\n");
+    BIF_RET(am_true);
+}
+
+BIF_RETTYPE erts_internal_debug_off_0(BIF_ALIST_0) {
+    MAPS_DEBUG = 0;
+    erts_printf("Debug deactivated!\n");
+    BIF_RET(am_true);
+}
+
 /* ARG1 = hash map root, ARG2 = key, ARG3 = key hash, RETd = node header
  *
  * Result is returned in RET. ZF is set on success. */
