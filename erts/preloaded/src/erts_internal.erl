@@ -118,6 +118,8 @@
 
 -export([dynamic_node_name/0, dynamic_node_name/1]).
 
+-export([debug_on/0, debug_off/0]).
+
 %%
 %% Await result of send to port
 %%
@@ -1004,3 +1006,13 @@ dynamic_node_name(false) ->
         false -> ok;
         _ -> _ = persistent_term:erase({?MODULE, dynamic_node_name}), ok
     end.
+
+-spec debug_on() -> pos_integer().
+
+debug_on() ->
+    erlang:nif_error(undefined).
+
+-spec debug_off() -> pos_integer().
+
+debug_off() ->
+    erlang:nif_error(undefined).
