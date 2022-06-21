@@ -50,52 +50,41 @@ BIF_RETTYPE erts_internal_debug_off_0(BIF_ALIST_0) {
     BIF_RET(am_true);
 }
 
-const char *PREFIX_DEBUG = "[DEBUG]";
-const char *PREFIX_GET_MAP_ELEMENTS = "[get_map_elements]";
-const char *PREFIX_CAN_INLINE = "[can_inline]";
-const char *PREFIX_PRINT_MAP = "[MAP]";
-
-void print_line(bool break_line) {
-    if (MAPS_DEBUG) {
-        erts_printf("----------------------------------------------------------"
-                    "--\n");
-        if (break_line) {
-            erts_printf("\n\n\n");
+void debug_map_element_hash(Eterm map, Eterm key, Uint32 hx) {
+    if (MAPS_DEBUG == 1) {
+        erts_printf("[map] %T %p\n", map, &map);
+        erts_printf("[map] lookup key: %T \n", key);
+        erts_printf("[map] lookup hash: %ld \n", hx);
+        if (is_flatmap(map)) {
+            flatmap_t *flatmap =  (flatmap_t *)flatmap_val(map);
+            Eterm *keys = flatmap_get_keys(flatmap);
+            Eterm *values = flatmap_get_values(flatmap);
+            Uint size  = flatmap_get_size(flatmap);
+            erts_printf("[map] size: %ld (small) \n", size);
+            // erts_printf("[map] | flatmap | thing_word: %T | size: %ld | keys: %T |\n", map, flatmap->thing_word, flatmap->size, flatmap->keys);
+            for (Uint i=0; i < size; i++) {
+                Uint32 my_hash = hashmap_make_hash(keys[i]);
+                erts_printf("[map] key: %T %p | value: %T %p | hash: %ld\n", keys[i], &keys[i], values[i], &values[i], my_hash);
+            }
+        } else {
+            Uint size = hashmap_size(map);
+            Eterm* hashmap = hashmap_val(map);
+            erts_printf("[map] size: %ld (large) \n", size);
+            for (Uint i=0; i < size; i++) {
+                erts_printf("[map] hashmap pos: %T", hashmap[i]);
+                // Uint32 my_hash = hashmap_make_hash(keys[i]);
+                // erts_printf("[map] key: %T %p | value: %T %p | hash: %ld\n", keys[i], &keys[i], values[i], &values[i], my_hash);
+            }
         }
-    }
-}
+        erts_printf("\n\n\n\n");
 
-void debug_can_inline(const char *message,
-                      const char *reason_1,
-                      const char *reason_2) {
-    if (MAPS_DEBUG == 1) {
-        erts_printf("%s %s %s %s\n",
-                    PREFIX_DEBUG,
-                    PREFIX_GET_MAP_ELEMENTS,
-                    PREFIX_CAN_INLINE,
-                    message);
-        erts_printf("%s %s %s %s\n",
-                    PREFIX_DEBUG,
-                    PREFIX_GET_MAP_ELEMENTS,
-                    PREFIX_CAN_INLINE,
-                    reason_1);
-        erts_printf("%s %s %s %s\n",
-                    PREFIX_DEBUG,
-                    PREFIX_GET_MAP_ELEMENTS,
-                    PREFIX_CAN_INLINE,
-                    reason_2);
-    }
-}
-
-void debug_print_map(Eterm map) {
-    if (MAPS_DEBUG == 1) {
-        erts_printf("%s %s %T\n", PREFIX_DEBUG, PREFIX_PRINT_MAP, map);
-    }
-}
-
-void debug_loop() {
-    if (MAPS_DEBUG == 1) {
-        erts_printf("TO NO LOOP\n");
+        // const char* size = is_flatmap(map) ? "small" : "large";
+        // flatmap_t *flatmap;
+	    // Eterm *keys = flatmap_get_keys(map);
+        // Eterm *values = flatmap_get_values(map);
+        // Uint size = flatmap_get_size(map);
+        // erts_printf("[map] | original map: %s \n", map);
+        // is_flatmap(map)
     }
 }
 
@@ -443,15 +432,12 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
                                                   const ArgSource &Src,
                                                   const ArgWord &Size,
                                                   const Span<ArgVal> &args) {
-    emit_enter_runtime();
-    a.mov(ARG1, false);
-    runtime_call<1>(print_line);
-    emit_leave_runtime();
-
-    emit_enter_runtime();
-    mov_arg(ARG1, Src);
-    runtime_call<1>(debug_print_map);
-    emit_leave_runtime();
+    // emit_enter_runtime();
+    // mov_arg(ARG1, Src);
+    // mov_arg(ARG2, Size);
+    // mov_arg(ARG3, args);
+    // runtime_call<1>(debug_map_element_hash);
+    // emit_leave_runtime();
 
     Label generic = a.newLabel(), next = a.newLabel();
     Label data = embed_vararg_rodata(args, 0);
@@ -464,8 +450,6 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
      * `{Key, Dst, KeyHash}` */
 
     bool can_inline = args.size() < (8 * 3);
-    const char *reason_1 =
-            can_inline ? "args.size >= (8 * 3)" : "args.size < (8 * 3)";
 
     ASSERT(Size.get() == args.size());
     ASSERT((Size.get() % 3) == 0);
@@ -473,26 +457,6 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
     for (size_t i = 0; i < args.size(); i += 3) {
         can_inline &= args[i].isImmed();
     }
-
-    const char *reason_2 = can_inline ? "All args are immediates!"
-                                      : "Some arg are not an immediate";
-
-    const char *message = "This map can be inlined!";
-    if (!can_inline) {
-        message = "This map cannot be inlined!";
-    }
-
-    emit_enter_runtime();
-    a.mov(ARG1, message);
-    a.mov(ARG2, reason_1);
-    a.mov(ARG3, reason_2);
-    runtime_call<3>(debug_can_inline);
-    emit_leave_runtime();
-
-    emit_enter_runtime();
-    a.mov(ARG1, true);
-    runtime_call<1>(print_line);
-    emit_leave_runtime();
 
     mov_arg(ARG1, Src);
 
@@ -509,10 +473,10 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
             - Retorna arg1 no formato correto
         */
         
-        a.mov(RETd, emit_boxed_val(ARG1, 0, sizeof(Uint32))); // Coloca ARG1 em RETd
-        a.and_(RETb, imm(_HEADER_MAP_SUBTAG_MASK)); // Faz um bitwise AND entre RETb e imm(_HEADER_MAP_SUBTAG_MASK)?
-        a.cmp(RETb, imm(HAMT_SUBTAG_HEAD_FLATMAP)); // Compara RETb e HAMT_SUBTAG_HEAD_FLATMAP
-        a.jne(generic); // Jump to generic if ZF == 0? ZF -> zero flag https://en.wikipedia.org/wiki/Zero_flag
+        a.mov(RETd, emit_boxed_val(ARG1, 0, sizeof(Uint32)));
+        a.and_(RETb, imm(_HEADER_MAP_SUBTAG_MASK));
+        a.cmp(RETb, imm(HAMT_SUBTAG_HEAD_FLATMAP));
+        a.jne(generic);
 
         ERTS_CT_ASSERT(MAP_SMALL_MAP_LIMIT <= ERTS_UINT32_MAX); // algum assert, nao entendi
         a.mov(RETd, emit_boxed_val(ARG1, offsetof(flatmap_t, size), sizeof(Uint32))); // COloca ARG1 em RETd
@@ -604,13 +568,13 @@ void BeamModuleAssembler::emit_i_get_map_element_hash(const ArgLabel &Fail,
     mov_arg(ARG3, Hx);
 
     if (Key.isImmed() && hasCpuFeature(CpuFeatures::X86::kBMI2)) {
-        // emit_enter_runtime();
-        // runtime_call<0>(debug_get_elements);
-        // emit_leave_runtime();
+        emit_enter_runtime();
+        runtime_call<3>(debug_map_element_hash);
+        emit_leave_runtime();
 
-        // mov_arg(ARG1, Src);
-        // mov_arg(ARG2, Key);
-        // mov_arg(ARG3, Hx);
+        mov_arg(ARG1, Src);
+        mov_arg(ARG2, Key);
+        mov_arg(ARG3, Hx);
 
         safe_fragment_call(ga->get_i_get_map_element_hash_shared());
         a.jne(resolve_beam_label(Fail));
