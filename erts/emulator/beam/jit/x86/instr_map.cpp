@@ -36,6 +36,7 @@ static const Uint32 HCONST_22 = 0x98C475E6UL;
 static const Uint32 HCONST = 0x9E3779B9;
 
 int MAPS_DEBUG = 0;
+int instruction_counter = 0;
 
 // Jean - Testing
 BIF_RETTYPE erts_internal_debug_on_0(BIF_ALIST_0) {
@@ -50,41 +51,64 @@ BIF_RETTYPE erts_internal_debug_off_0(BIF_ALIST_0) {
     BIF_RET(am_true);
 }
 
-void debug_map_element_hash(Eterm map, Eterm key, Uint32 hx) {
+void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
     if (MAPS_DEBUG == 1) {
-        erts_printf("[map] %T %p\n", map, &map);
-        erts_printf("[map] lookup key: %T \n", key);
-        erts_printf("[map] lookup hash: %ld \n", hx);
         if (is_flatmap(map)) {
             flatmap_t *flatmap =  (flatmap_t *)flatmap_val(map);
+            Eterm *keys_pointer = &((flatmap_t *)(flatmap))->keys;
             Eterm *keys = flatmap_get_keys(flatmap);
-            Eterm *values = flatmap_get_values(flatmap);
             Uint size  = flatmap_get_size(flatmap);
-            erts_printf("[map] size: %ld (small) \n", size);
-            // erts_printf("[map] | flatmap | thing_word: %T | size: %ld | keys: %T |\n", map, flatmap->thing_word, flatmap->size, flatmap->keys);
+            int all_keys_on_map = 0;
             for (Uint i=0; i < size; i++) {
-                Uint32 my_hash = hashmap_make_hash(keys[i]);
-                erts_printf("[map] key: %T %p | value: %T %p | hash: %ld\n", keys[i], &keys[i], values[i], &values[i], my_hash);
+                if (key == keys[i]) {
+                    all_keys_on_map = 1;
+                }
+            }
+            erts_fprintf(stderr, "[map] small %d %p %ld %d %T %ld",
+                        id,
+                        keys_pointer,
+                        size,
+                        all_keys_on_map,
+                        key,
+                        hx);
+        } else {
+            erts_fprintf(stderr, "[map] large %d", id);
+        }
+        erts_fprintf(stderr, "\n\n");
+    }
+}
+
+void debug_map_elements(int id, Eterm map, Eterm *fs, Uint n) {
+    if (MAPS_DEBUG == 1) {
+        if (is_flatmap(map)) {
+            flatmap_t *flatmap = (flatmap_t *)flatmap_val(map);
+            Uint size = flatmap_get_size(flatmap), size_aux = flatmap_get_size(flatmap);
+            Eterm *keys = flatmap_get_keys(flatmap), *keys_aux = flatmap_get_keys(flatmap);
+            Eterm *keys_pointer = &((flatmap_t *)(flatmap))->keys;
+            bool all_keys_on_map = 1;
+            erts_fprintf(stderr, "[map] small %d %p %ld ",
+                        id,
+                        keys_pointer,
+                        size);
+            while (size_aux) {
+                if (!EQ(fs[0], *keys_aux)) {
+                    all_keys_on_map = 0;
+                }
+                n--;
+                fs += 3;
+                if (n == 0) {
+                    break;
+                }
+                keys_aux++, size_aux--;
+            }
+            erts_fprintf(stderr, "%d ", all_keys_on_map);
+            for (Uint i=0; i<size; i++) {
+                erts_fprintf(stderr, "%T %ld ", keys[i], hashmap_make_hash(keys[i]));
             }
         } else {
-            Uint size = hashmap_size(map);
-            Eterm* hashmap = hashmap_val(map);
-            erts_printf("[map] size: %ld (large) \n", size);
-            for (Uint i=0; i < size; i++) {
-                erts_printf("[map] hashmap pos: %T", hashmap[i]);
-                // Uint32 my_hash = hashmap_make_hash(keys[i]);
-                // erts_printf("[map] key: %T %p | value: %T %p | hash: %ld\n", keys[i], &keys[i], values[i], &values[i], my_hash);
-            }
+            erts_fprintf(stderr, "[map] large %d", id);
         }
-        erts_printf("\n\n\n\n");
-
-        // const char* size = is_flatmap(map) ? "small" : "large";
-        // flatmap_t *flatmap;
-	    // Eterm *keys = flatmap_get_keys(map);
-        // Eterm *values = flatmap_get_values(map);
-        // Uint size = flatmap_get_size(map);
-        // erts_printf("[map] | original map: %s \n", map);
-        // is_flatmap(map)
+        erts_fprintf(stderr, "\n\n");
     }
 }
 
@@ -432,15 +456,16 @@ void BeamModuleAssembler::emit_i_get_map_elements(const ArgLabel &Fail,
                                                   const ArgSource &Src,
                                                   const ArgWord &Size,
                                                   const Span<ArgVal> &args) {
-    // emit_enter_runtime();
-    // mov_arg(ARG1, Src);
-    // mov_arg(ARG2, Size);
-    // mov_arg(ARG3, args);
-    // runtime_call<1>(debug_map_element_hash);
-    // emit_leave_runtime();
-
     Label generic = a.newLabel(), next = a.newLabel();
     Label data = embed_vararg_rodata(args, 0);
+
+    emit_enter_runtime();
+    a.mov(ARG1, instruction_counter++);
+    mov_arg(ARG2, Src);
+    a.lea(ARG3, x86::qword_ptr(data));
+    mov_imm(ARG4, args.size() / 3);
+    runtime_call<4>(debug_map_elements);
+    emit_leave_runtime();
 
     /* We're not likely to gain much from inlining huge extractions, and the
      * resulting code is quite large, so we'll cut it off after a handful
@@ -563,13 +588,13 @@ void BeamModuleAssembler::emit_i_get_map_element_hash(const ArgLabel &Fail,
                                                       const ArgConstant &Key,
                                                       const ArgWord &Hx,
                                                       const ArgRegister &Dst) {
-    mov_arg(ARG1, Src);
-    mov_arg(ARG2, Key);
-    mov_arg(ARG3, Hx);
-
     if (Key.isImmed() && hasCpuFeature(CpuFeatures::X86::kBMI2)) {
         emit_enter_runtime();
-        runtime_call<3>(debug_map_element_hash);
+        a.mov(ARG1, instruction_counter++);
+        mov_arg(ARG2, Src);
+        mov_arg(ARG3, Key);
+        mov_arg(ARG4, Hx);
+        runtime_call<4>(debug_map_element_hash);
         emit_leave_runtime();
 
         mov_arg(ARG1, Src);
