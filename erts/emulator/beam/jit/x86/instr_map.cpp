@@ -81,29 +81,46 @@ void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
 void debug_map_elements(int id, Eterm map, Eterm *fs, Uint n) {
     if (MAPS_DEBUG == 1) {
         if (is_flatmap(map)) {
+            Uint n_aux = n;
             flatmap_t *flatmap = (flatmap_t *)flatmap_val(map);
             Uint size = flatmap_get_size(flatmap), size_aux = flatmap_get_size(flatmap);
             Eterm *keys = flatmap_get_keys(flatmap), *keys_aux = flatmap_get_keys(flatmap);
             Eterm *keys_pointer = &((flatmap_t *)(flatmap))->keys;
             bool all_keys_on_map = 1;
+            int count = 0;
             erts_fprintf(stderr, "[map] small %d %p %ld ",
                         id,
                         keys_pointer,
                         size);
             while (size_aux) {
-                if (!EQ(fs[0], *keys_aux)) {
-                    all_keys_on_map = 0;
+                count++;
+                int found = 0;
+                for (Uint i=0; i<size; i++) {
+                    if (EQ(fs[0], keys[i])) {
+                        found = 1;
+                    }
                 }
-                n--;
+                all_keys_on_map &= found;
+                n_aux--;
                 fs += 3;
-                if (n == 0) {
+                if (n_aux == 0) {
                     break;
                 }
                 keys_aux++, size_aux--;
             }
             erts_fprintf(stderr, "%d ", all_keys_on_map);
-            for (Uint i=0; i<size; i++) {
-                erts_fprintf(stderr, "%T %ld ", keys[i], hashmap_make_hash(keys[i]));
+            n_aux = n;
+            size_aux = size;
+            keys_aux = keys;
+            fs -= 3 * count;
+            while (size_aux) {
+                erts_fprintf(stderr, "%T %ld ", fs[0], hashmap_make_hash(fs[0]));
+                n_aux--;
+                fs += 3;
+                if (n_aux == 0) {
+                    break;
+                }
+                keys_aux++, size_aux--;
             }
         } else {
             erts_fprintf(stderr, "[map] large %d", id);
