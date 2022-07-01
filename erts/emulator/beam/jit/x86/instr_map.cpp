@@ -81,46 +81,38 @@ void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
 void debug_map_elements(int id, Eterm map, Eterm *fs, Uint n) {
     if (MAPS_DEBUG == 1) {
         if (is_flatmap(map)) {
-            Uint n_aux = n;
+            int n_aux = n;
             flatmap_t *flatmap = (flatmap_t *)flatmap_val(map);
-            Uint size = flatmap_get_size(flatmap), size_aux = flatmap_get_size(flatmap);
-            Eterm *keys = flatmap_get_keys(flatmap), *keys_aux = flatmap_get_keys(flatmap);
+            Uint size = flatmap_get_size(flatmap);
+            Eterm *keys = flatmap_get_keys(flatmap);
             Eterm *keys_pointer = &((flatmap_t *)(flatmap))->keys;
-            bool all_keys_on_map = 1;
-            int count = 0;
+            int all_keys_on_map = 0, count = 0;
             erts_fprintf(stderr, "[map] small %d %p %ld ",
                         id,
                         keys_pointer,
                         size);
-            while (size_aux) {
-                count++;
-                int found = 0;
-                for (Uint i=0; i<size; i++) {
-                    if (EQ(fs[0], keys[i])) {
-                        found = 1;
+            while (size) {
+                if (EQ(fs[0], *keys)) {
+                    count++;
+                    n_aux--;
+                    fs += 3;
+
+                    if (n_aux == 0) {
+                        all_keys_on_map = 1;
                     }
                 }
-                all_keys_on_map &= found;
-                n_aux--;
-                fs += 3;
-                if (n_aux == 0) {
-                    break;
-                }
-                keys_aux++, size_aux--;
-            }
+                keys++; size--;
+            }            
             erts_fprintf(stderr, "%d ", all_keys_on_map);
-            n_aux = n;
-            size_aux = size;
-            keys_aux = keys;
+            size = flatmap_get_size(flatmap);
+            keys = flatmap_get_keys(flatmap);
             fs -= 3 * count;
-            while (size_aux) {
-                erts_fprintf(stderr, "%T %ld ", fs[0], hashmap_make_hash(fs[0]));
+            n_aux = n;
+            while (n_aux) {
+                erts_fprintf(stderr, "%T %ld ", fs[0], fs[2]);
                 n_aux--;
                 fs += 3;
-                if (n_aux == 0) {
-                    break;
-                }
-                keys_aux++, size_aux--;
+                keys++; size--;
             }
         } else {
             erts_fprintf(stderr, "[map] large %d", id);
