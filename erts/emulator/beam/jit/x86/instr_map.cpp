@@ -56,7 +56,6 @@ void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
         // erts_fprintf(stderr, "[map] %T\n", map);
         if (is_flatmap(map)) {
             flatmap_t *flatmap =  (flatmap_t *)flatmap_val(map);
-            Eterm *keys_pointer = &((flatmap_t *)(flatmap))->keys;
             Eterm *keys = flatmap_get_keys(flatmap);
             Uint size  = flatmap_get_size(flatmap);
             int all_keys_on_map = 0;
@@ -67,7 +66,7 @@ void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
             }
             erts_fprintf(stderr, "[map] small %d %p %ld %d %T %ld",
                         id,
-                        keys_pointer,
+                        keys,
                         size,
                         all_keys_on_map,
                         key,
@@ -87,11 +86,10 @@ void debug_map_elements(int id, Eterm map, Eterm *fs, Uint n) {
             flatmap_t *flatmap = (flatmap_t *)flatmap_val(map);
             Uint size = flatmap_get_size(flatmap);
             Eterm *keys = flatmap_get_keys(flatmap);
-            Eterm *keys_pointer = &((flatmap_t *)(flatmap))->keys;
             int all_keys_on_map = 0, count = 0;
             erts_fprintf(stderr, "[map] small %d %p %ld ",
                         id,
-                        keys_pointer,
+                        keys,
                         size);
             while (size) {
                 if (EQ(fs[0], *keys)) {
