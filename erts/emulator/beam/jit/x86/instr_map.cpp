@@ -52,7 +52,8 @@ BIF_RETTYPE erts_internal_debug_off_0(BIF_ALIST_0) {
 }
 
 void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
-    if (MAPS_DEBUG == 1) {
+    if (MAPS_DEBUG == 1 && !is_non_value(map)) {
+        // erts_fprintf(stderr, "[map] %T\n", map);
         if (is_flatmap(map)) {
             flatmap_t *flatmap =  (flatmap_t *)flatmap_val(map);
             Eterm *keys_pointer = &((flatmap_t *)(flatmap))->keys;
@@ -79,7 +80,8 @@ void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
 }
 
 void debug_map_elements(int id, Eterm map, Eterm *fs, Uint n) {
-    if (MAPS_DEBUG == 1) {
+    if (MAPS_DEBUG == 1 && !is_non_value(map)) {
+        // erts_fprintf(stderr, "[map] %T\n", map);
         if (is_flatmap(map)) {
             int n_aux = n;
             flatmap_t *flatmap = (flatmap_t *)flatmap_val(map);
