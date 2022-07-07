@@ -53,21 +53,20 @@ BIF_RETTYPE erts_internal_debug_off_0(BIF_ALIST_0) {
 
 void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
     if (MAPS_DEBUG == 1 && !is_non_value(map)) {
-        // erts_fprintf(stderr, "[map] %T\n", map);
         if (is_flatmap(map)) {
+            // erts_fprintf(stderr, "[map] %T\n", map);
             flatmap_t *flatmap =  (flatmap_t *)flatmap_val(map);
-            Eterm *keys = &((flatmap_t *)(flatmap))->keys;
-            Uint size  = flatmap_get_size(flatmap);
+            Eterm *keys = flatmap_get_keys(flatmap);
             int all_keys_on_map = 0;
-            for (Uint i=0; i < size; i++) {
+            for (Uint i=0; i < flatmap->size; i++) {
                 if (key == keys[i]) {
                     all_keys_on_map = 1;
                 }
             }
             erts_fprintf(stderr, "[map] small %d %p %ld %d %T %ld",
                         id,
-                        keys,
-                        size,
+                        flatmap->keys,
+                        flatmap->size,
                         all_keys_on_map,
                         key,
                         hx);
@@ -80,16 +79,16 @@ void debug_map_element_hash(int id, Eterm map, Eterm key, Uint32 hx) {
 
 void debug_map_elements(int id, Eterm map, Eterm *fs, Uint n) {
     if (MAPS_DEBUG == 1 && !is_non_value(map)) {
-        // erts_fprintf(stderr, "[map] %T\n", map);
         if (is_flatmap(map)) {
+            // erts_fprintf(stderr, "[map] %T\n", map);
             int n_aux = n;
             flatmap_t *flatmap = (flatmap_t *)flatmap_val(map);
-            Uint size = flatmap_get_size(flatmap);
-            Eterm *keys = &((flatmap_t *)(flatmap))->keys;
+            Uint size = flatmap->size;
+            Eterm *keys = flatmap_get_keys(flatmap);
             int all_keys_on_map = 0, count = 0;
             erts_fprintf(stderr, "[map] small %d %p %ld ",
                         id,
-                        keys,
+                        flatmap->keys,
                         size);
             while (size) {
                 if (EQ(fs[0], *keys)) {
@@ -104,8 +103,8 @@ void debug_map_elements(int id, Eterm map, Eterm *fs, Uint n) {
                 keys++; size--;
             }            
             erts_fprintf(stderr, "%d ", all_keys_on_map);
-            size = flatmap_get_size(flatmap);
-            keys = &((flatmap_t *)(flatmap))->keys;
+            size = flatmap->size;
+            keys = flatmap_get_keys(flatmap);
             fs -= 3 * count;
             n_aux = n;
             while (n_aux) {
